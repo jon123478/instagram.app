@@ -1,43 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Show Raw GPS Data</title>
-</head>
-<body>
+var map = L.map('map').setView([0,0], 2);
 
-<button onclick="getGPS()">Get My GPS Data</button>
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
 
-<pre id="gpsData"></pre>
+var marker;
 
-<script>
-function getGPS(){
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position){
-                // Get raw GPS data
-                const data = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy,
-                    altitude: position.coords.altitude,
-                    altitudeAccuracy: position.coords.altitudeAccuracy,
-                    speed: position.coords.speed,
-                    heading: position.coords.heading
-                };
 
-                // Show it on the page
-                document.getElementById("gpsData").textContent = JSON.stringify(data, null, 2);
-            },
-            function(error){
-                document.getElementById("gpsData").textContent = "Error: " + error.message;
+
+            var lat = 7.1372719
+            var lon = 80.063659
+
+            map.setView([lat, lon], 17);
+
+            if(marker){
+                map.removeLayer(marker);
             }
-        );
-    } else {
-        document.getElementById("gpsData").textContent = "Geolocation not supported";
-    }
-}
-</script>
 
-</body>
-</html>
+            marker = L.marker([lat, lon]).addTo(map);
+
+
