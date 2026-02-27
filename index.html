@@ -1,22 +1,101 @@
-var map = L.map('map').setView([0,0], 2);
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapTiler GPS with Multiple Styles</title>
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-}).addTo(map);
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-var marker;
+<style>
+html, body { margin:0; padding:0; height:100%; }
+#map { height:100%; width:100%; }
+#btn {
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:1000;
+    padding:10px;
+    background:white;
+    border:none;
+    font-size:16px;
+}
+</style>
+</head>
+<body>
 
+<button id="btn">Start Tracking My Location</button>
+<div id="map"></div>
 
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-            var lat = 7.1372719
-            var lon = 80.063659
+<script>
+const MAPTILER_KEY = "V63Z83Byl50yxUTJWQSP"; // replace with your MapTiler key
+
+// Create base layers
+var streets = L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
+    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
+    maxZoom: 20
+});
+
+var satellite = L.tileLayer(`https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
+    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
+    maxZoom: 20
+});
+
+var terrain = L.tileLayer(`https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
+    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
+    maxZoom: 20
+});
+
+// Initialize map
+var map = L.map('map', {
+    center: [0,0],
+    zoom: 2,
+    layers: [streets] // default
+});
+
+// Layer control to switch between styles
+var baseMaps = {
+    "Streets": streets,
+    "Satellite": satellite,
+    "Terrain": terrain
+};
+L.control.layers(baseMaps).addTo(map);
+
+var marker, accuracyCircle;
+
+// Button click to start GPS tracking
+document.getElementById("btn").onclick = function(){
+    if(navigator.geolocation){
+        navigator.geolocation.watchPosition(function(pos){
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const acc = pos.coords.accuracy;
 
             map.setView([lat, lon], 17);
 
-            if(marker){
-                map.removeLayer(marker);
-            }
+            if(marker) map.removeLayer(marker);
+            if(accuracyCircle) map.removeLayer(accuracyCircle);
 
-            marker = L.marker([lat, lon]).addTo(map);
+            marker = L.marker([lat, lon]).addTo(map)
+                     .bindPopup("You are here<br>Accuracy: " + acc + " m").openPopup();
 
+            accuracyCircle = L.circle([lat, lon], {radius: acc, color:'blue', fillOpacity:0.2}).addTo(map);
 
+        }, function(err){
+            alert("Error getting location: " + err.message);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        });
+    } else {
+        alert("Geolocation not supported");
+    }
+};
+</script>
+
+</body>
+</html>
